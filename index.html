@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+	<script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+    <p id='id'></p>
+	<input id='otherId'/>
+	<button id='connect'>c</button>
+	<audio id='video'></audio>
+	<script>
+		let id=document.getElementById('id');
+		let connect=document.getElementById('connect');
+		let otherId=document.getElementById('otherId');
+		let video=document.getElementById('video');
+		
+		let peers=[]
+		function addPeer(peer, oStream){
+			//let p=new Peer()
+			peers.forEach((v, k)=>{
+				var conn = peer.call(v,oStream);
+			})
+			peers.push(peer)
+			
+		}
+		let myPeer=new Peer();
+		let stream;
+		navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+		navigator.getUserMedia (
+		  {video: false, audio: true},
+		  function success(localAudioStream) {
+			stream=localAudioStream
+		  },
+		  function error(err) {
+			console.log(err)
+		  }
+		);
+		connect.onclick=()=>{
+			var conn = myPeer.call(otherId.value,stream);
+			/*conn.on('open', function() {
+			  // Receive messages
+			  conn.on('data', function(data) {
+				console.log('Received', data);
+			  });
+
+			  // Send messages
+			  conn.send('Hello!');
+			});*/
+		}
+		myPeer.on('open', function(i) {
+		  id.innerText=i
+		});
+		myPeer.on('call', function(call) {
+		  // Answer the call, providing our mediaStream
+		  call.answer(stream);
+		  call.on('stream', function(s) {
+			  video.srcObject=s
+			  addPeer(call, s)
+			});
+		});
+		
+		
+	</script>
+  </body>
+</html>
